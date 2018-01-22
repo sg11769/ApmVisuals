@@ -3,13 +3,13 @@ title: "Agile Portfolio Management (APM) Visuals"
 output: html_document
 ---
 
-This is an R Markdown document for the ApmVisuals package, which uses **ggplot2** to create custom visualizations for Agile Portfolio managers. These visuals were derived from guidance from the [Scaled Agile Framework (SAFe) site](http://www.scaledagileframework.com).
+This is an R Markdown document for the [ApmVisuals](https://github.com/sg11769/ApmVisuals) package, which uses **ggplot2** to create custom visualizations for Agile Portfolio managers. These visuals were derived from guidance from the [Scaled Agile Framework (SAFe) site](http://www.scaledagileframework.com).
 
 These visualizations include:
-* Epic Burn-Up Chart
-* WSJF Comparison Chart
-* Investment Opportunit Schedule
-* Epic Progress Bar Chart
+1. Epic Burn-Up Chart
+2. WSJF Comparison Chart
+3. Investment Opportunit Schedule
+4. Epic Progress Bar Chart
 
 ```{r, echo = FALSE, include = FALSE}
 #Functions to produce visuals aiding in Portfolio Project Selection and Justification
@@ -98,6 +98,8 @@ iterationName <- c("PI 1 - Iteration 1", "PI 1 - Iteration 2", "PI 1 - Iteration
 initialEstimate <- c(500, 500, 550, 550, 570, 570)
 actualStoryPoints <- c(75, 65, 78, 108, 115, 130)
 cumulativeStoryPoints <- cumsum(actualStoryPoints)
+df <- data.frame(iterationName, initialEstimate, actualStoryPoints, cumulativeStoryPoints)
+print(df)
 generateEpicBurnUp(iterationName, initialEstimate, actualStoryPoints, cumulativeStoryPoints)
 ```
 
@@ -111,6 +113,8 @@ The following depicts an example of the **WSJF Comparison Chart**:
 featureName <- c("Feature #1", "Feature #2", "Feature #3", "Feature #4", "Feature #5", "Feature #6", "Feature #7", "Feature #8", "Feature #9", "Feature #10")
 duration <- c(2, 4, 7, 8, 3, 4, 4, 5, 10, 12)
 cod <- c(12.0, 4.25, 7.5, 3.333, 5.0, 6.0, 13.75, 10.0, 2.25, 1.25)
+df <- data.frame(featureName, duration, cod)
+print(df)
 generateWsjf(featureName, duration, cod)
 ```
 
@@ -124,6 +128,8 @@ The following depicts an example of the **Investment Opportunity Schedule**:
 projectName <- c("Epic #1", "Epic #2", "Epic #3", "Epic #4", "Epic #5", "Epic #6")
 projectReturnRate <- c(.10, .22, .05, .12, .30, .09)
 projectCost <- c(124000, 212000, 153000, 420000, 75000, 98000)
+df <- data.frame(projectName, projectReturnRate, projectCost)
+print(df)
 generateIos(projectName, projectReturnRate, projectCost)
 ```
 
@@ -142,6 +148,8 @@ completedFeaturePoints <- c(50, 170, 94, 34, 40, 125)
 initialEstimates <- c(120, 200, 140, 100, 50, 200)
 startDates <- c("2018-02-22", "2018-02-22", "2018-04-22", "2018-06-22", "2018-08-22", "2018-09-22")
 targetDates <- c("2018-03-22", "2018-05-22", "2018-07-22", "2018-09-22", "2018-11-22", "2018-12-22")
+df <- data.frame(epicNames, totalFeaturePoints, completedFeaturePoints, initialEstimates, startDates, targetDates)
+print(df)
 generateEpicProgress(epicNames, startDates, targetDates, totalFeaturePoints, completedFeaturePoints, initialEstimates)
 ```
 
