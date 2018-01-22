@@ -5,7 +5,7 @@ library(ggplot2)
 library(gridExtra)
 
 #Epic Burn-Up Chart Visual
-generateEpicBurnUp <- function(iterationName, initialEstimate, actualStoryPoints, cumulativeStoryPoints) {
+generateEpicBurnUp <- function(iterationName, initialEstimate, actualStoryPoints, cumulativeStoryPoints = cumsum(actualStoryPoints)) {
 
     df <- data.frame(iterationName, initialEstimate, actualStoryPoints, cumulativeStoryPoints)
 

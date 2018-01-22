@@ -19,7 +19,7 @@ library(ggplot2)
 library(gridExtra)
 
 #Epic Burn-Up Chart Visual
-generateEpicBurnUp <- function(iterationName, initialEstimate, actualStoryPoints, cumulativeStoryPoints) {
+generateEpicBurnUp <- function(iterationName, initialEstimate, actualStoryPoints, cumulativeStoryPoints = cumsum(actualStoryPoints)) {
 
     df <- data.frame(iterationName, initialEstimate, actualStoryPoints, cumulativeStoryPoints)
 
@@ -98,9 +98,9 @@ iterationName <- c("PI 1 - Iteration 1", "PI 1 - Iteration 2", "PI 1 - Iteration
 initialEstimate <- c(500, 500, 550, 550, 570, 570)
 actualStoryPoints <- c(75, 65, 78, 108, 115, 130)
 cumulativeStoryPoints <- cumsum(actualStoryPoints)
-df <- data.frame(iterationName, initialEstimate, actualStoryPoints, cumulativeStoryPoints)
+df <- data.frame(iterationName, initialEstimate, actualStoryPoints)
 print(df)
-generateEpicBurnUp(iterationName, initialEstimate, actualStoryPoints, cumulativeStoryPoints)
+generateEpicBurnUp(iterationName, initialEstimate, actualStoryPoints)
 ```
 
 ## WSJF Comparison Chart
