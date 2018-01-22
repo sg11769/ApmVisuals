@@ -1,0 +1,160 @@
+---
+title: "Agile Portfolio Management (APM) Visuals"
+output: html_document
+---
+
+This is an R Markdown document for the ApmVisuals package, which uses **ggplot2** to create custom visualizations for Agile Portfolio managers. These visuals were derived from guidance from the [Scaled Agile Framework (SAFe) site](http://www.scaledagileframework.com).
+
+These visualizations include:
+* Epic Burn-Up Chart
+* WSJF Comparison Chart
+* Investment Opportunit Schedule
+* Epic Progress Bar Chart
+
+```{r, echo = FALSE, include = FALSE}
+#Functions to produce visuals aiding in Portfolio Project Selection and Justification
+install.packages("ggplot2")
+install.packages("gridExtra")
+library(ggplot2)
+library(gridExtra)
+
+#Epic Burn-Up Chart Visual
+generateEpicBurnUp <- function(iterationName, initialEstimate, actualStoryPoints, cumulativeStoryPoints) {
+
+    df <- data.frame(iterationName, initialEstimate, actualStoryPoints, cumulativeStoryPoints)
+
+    ggplot(df, aes(x = iterationName, y = initialEstimate, group = 1)) +
+      geom_line(aes(y = initialEstimate), lwd = 1.25) +
+      ggtitle("Epic Burn-Up") +
+      xlab("Increment and Iteration") +
+      ylab("Effort (in Story Points)") +
+      geom_line(aes(y = actualStoryPoints), col = "red", lwd = 1.25) +
+      geom_line(aes(y = cumulativeStoryPoints), col = "darkgreen", lwd = 1.25) +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+}
+
+#Weight Shortest Job First (WSJF) Visual
+generateWsjf <- function(featureName, duration, cod) {
+
+    weight <- cod / duration
+    df <- data.frame(featureName, duration, cod, weight)
+    df$loc <- df$duration / 2
+
+    ggplot(df, aes(x = loc, y = cod, width = duration)) +
+      geom_bar(aes(fill = featureName), stat = "identity", position = "identity", alpha = .4) +
+      ggtitle("Cost of Delay") +
+      guides(fill = guide_legend(title = "Feature Name")) +
+      xlab("Estiamted Duration (in Iterations)") +
+      ylab("Cost of Delay")
+}
+
+#Investment Opportunity Schedule (IOS)
+generateIos <- function(projectName, projectReturnRate, projectCost) {
+
+    projectReturnRate <- projectReturnRate * 100
+    df <- data.frame(projectName, projectReturnRate, projectCost)
+    df <- df[with(df, order(-projectReturnRate)),]
+    df$loc <- cumsum(df$projectCost) - df$projectCost / 2
+
+    ggplot(df, aes(x = loc, y = projectReturnRate, width = projectCost)) +
+      geom_bar(aes(fill = projectName), stat = "identity") +
+      scale_x_continuous(breaks = df$loc) +
+      ggtitle("Investment Opportunity Schedule") +
+      xlab("Costs ($)") +
+      ylab("Rate of Return (%)") +
+      guides(fill = guide_legend(title = "Project/Epic")) +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+}
+
+#Epic Progress Bars
+generateEpicProgress <- function(epicNames, startDates, targetDates, totalFeaturePoints, completedFeaturePoints, initialEstimates) {
+
+    df <- data.frame(epicNames, startDates, targetDates, totalFeaturePoints, completedFeaturePoints, initialEstimates)
+    df$percentComplete <- completedFeaturePoints / totalFeaturePoints
+    df$remainingPoints <- totalFeaturePoints - completedFeaturePoints
+
+    ggplot(df, aes(x = epicNames, y = totalFeaturePoints, color = epicNames)) +
+      geom_bar(aes(y = totalFeaturePoints, fill = epicNames), stat = "identity") +
+      geom_text(aes(label = totalFeaturePoints), col = "black", hjust = 1.25) +
+      geom_bar(aes(y = completedFeaturePoints), fill = "green", stat = "identity") +
+      geom_text(aes(label = completedFeaturePoints), col = "green", hjust = 1.25, vjust = -1.15) +
+      geom_errorbar(aes(ymin = initialEstimates, ymax = initialEstimates), col = "red", lwd = 1.15) +
+      coord_flip() +
+      ggtitle("Epic Progress Report") +
+      xlab("Epic (Project) Name") +
+      ylab("Effort (in Story Points)") +
+      theme(legend.position = "none")
+}
+```
+
+## Epic Burn-Up Chart
+The **Epic Burn-Up Chart** depicts the initial estimate in story points, actual story points completed, and cumulative story points completed over time. Therefore, the **generateEpicBurnUp** function takes the following parameters: 1. **iterationName** - a vector of iteration names in chronological order, 2. **initialEstimate** - a vector of initialEstimates, 3. **actualStoryPoints** - the actual story points completed in an iteration, and 4. **cumulativeStoryPoints** - a running sum of the storyPoints iteration to iteration.
+
+The following depicts and example of the **Epic Burn-Up Chart**:
+
+```{r}
+#Epic Burn-Up Chart Visual Example
+iterationName <- c("PI 1 - Iteration 1", "PI 1 - Iteration 2", "PI 1 - Iteration 3", "PI 1 - Iteration 4", "PI 1 - Iteration 5", "PI 1 - Iteration 6")
+initialEstimate <- c(500, 500, 550, 550, 570, 570)
+actualStoryPoints <- c(75, 65, 78, 108, 115, 130)
+cumulativeStoryPoints <- cumsum(actualStoryPoints)
+generateEpicBurnUp(iterationName, initialEstimate, actualStoryPoints, cumulativeStoryPoints)
+```
+
+## WSJF Comparison Chart
+The **WSJF Comparison Chart** depicts the Cost of Delay against the estiamted Duration (in Iterations) of a given Feature. Therefore, the **generateWsjf** function takes the following parameters: 1. **featureName** - vector of feature names, 2. **duration** - vector of durations, and 3. **cod** - vector of cost of delay.
+
+The following depicts an example of the **WSJF Comparison Chart**:
+
+```{r}
+#WSJF Visual Example
+featureName <- c("Feature #1", "Feature #2", "Feature #3", "Feature #4", "Feature #5", "Feature #6", "Feature #7", "Feature #8", "Feature #9", "Feature #10")
+duration <- c(2, 4, 7, 8, 3, 4, 4, 5, 10, 12)
+cod <- c(12.0, 4.25, 7.5, 3.333, 5.0, 6.0, 13.75, 10.0, 2.25, 1.25)
+generateWsjf(featureName, duration, cod)
+```
+
+## Investment Opportunity Schedule
+The **Investment Opportunity Schedule** provides an alternative visual to standard SAFe metrics that leverages a concept from investment planning, which compares Internal Rate of Return vs. Capital Costs. Therefore the **generateIos** function take the following parameters: 1. **projectName** - the epic or project name, 2. **projectReturnRate** - the anticipated return rate in decimal format, and 3. **projectCost** - estiamted cost in USD.
+
+The following depicts an example of the **Investment Opportunity Schedule**:
+
+```{r}
+#IOS Visual Example
+projectName <- c("Epic #1", "Epic #2", "Epic #3", "Epic #4", "Epic #5", "Epic #6")
+projectReturnRate <- c(.10, .22, .05, .12, .30, .09)
+projectCost <- c(124000, 212000, 153000, 420000, 75000, 98000)
+generateIos(projectName, projectReturnRate, projectCost)
+```
+
+## Epic Progress Bar Chart
+The **Epic Progress Bar Chart** depicts completed story points against the remaning and total points for a given epic or project. Therefore the **generateEpicProgress** function takes the following parameters: 1. **epicName** - the name of the epic or project, 2. **totalFeaturePoints** - the sum of all story points for a given feature, 3. **completedStoryPoints** - the sum of all story points for a given feature where the status is Done, and 4. the **initialEstimates** - the initial estimates (in story points) for a given epic.
+
+*Note: The startDate and targetDate fields are currently not used, but are required. The function will be updated in the future to use these values for additional indicators.*
+
+The following depicts an example of the **Epic Progress Bar Chart**:
+
+```{r}
+#Epic Progres Bars Visual Example
+epicNames <- c("Epic #1", "Epic #2", "Epic #3", "Epic #4", "Epic #5", "Epic #6")
+totalFeaturePoints <- c(100, 230, 150, 95, 78, 176)
+completedFeaturePoints <- c(50, 170, 94, 34, 40, 125)
+initialEstimates <- c(120, 200, 140, 100, 50, 200)
+startDates <- c("2018-02-22", "2018-02-22", "2018-04-22", "2018-06-22", "2018-08-22", "2018-09-22")
+targetDates <- c("2018-03-22", "2018-05-22", "2018-07-22", "2018-09-22", "2018-11-22", "2018-12-22")
+generateEpicProgress(epicNames, startDates, targetDates, totalFeaturePoints, completedFeaturePoints, initialEstimates)
+```
+
+*Note: All vectors must be an equal length. This makes datasources in a table format, which are easily converted to dataframes, an ideal source.*
+
+## Grid All Charts
+To view all of these ggplot2 visuals in a gridview using gridExtra:
+
+```{r, echo = FALSE}
+#install.packages("gridExtra")
+plot1 <- generateEpicBurnUp(iterationName, initialEstimate, actualStoryPoints, cumulativeStoryPoints)
+plot2 <- generateWsjf(featureName, duration, cod)
+plot3 <- generateIos(projectName, projectReturnRate, projectCost)
+plot4 <- generateEpicProgress(epicNames, startDates, targetDates, totalFeaturePoints, completedFeaturePoints, initialEstimates)
+grid.arrange(plot1, plot2, plot3, plot4, ncol = 2)
+```
