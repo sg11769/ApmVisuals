@@ -3,9 +3,9 @@ title: "Agile Portfolio Management (APM) Visuals"
 output: html_document
 ---
 
-This is an R Markdown document for the [ApmVisuals](https://github.com/sg11769/ApmVisuals) package, which uses **ggplot2** to create custom visualizations for Agile Portfolio managers. These visuals were derived from guidance from the [Scaled Agile Framework (SAFe) site](http://www.scaledagileframework.com).
+This is an R Markdown document for the [ApmVisuals](https://github.com/sg11769/ApmVisuals) package, which uses **ggplot2** to create custom visualizations for Agile Portfolio managers. These visuals were derived from guidance from the [Scaled Agile Framework (SAFe) site](http://www.scaledagileframework.com). The visuals are based on Portfolio levle SAFe, which includes Portfolio, Program, and Team level metrics.
 
-These visualizations include:
+At the portfolio level, these visualizations include:
 1. Epic Burn-Up Chart
 2. WSJF Comparison Chart
 3. Investment Opportunit Schedule
@@ -165,4 +165,118 @@ plot2 <- generateWsjf(featureName, duration, cod)
 plot3 <- generateIos(projectName, projectReturnRate, projectCost)
 plot4 <- generateEpicProgress(epicNames, startDates, targetDates, totalFeaturePoints, completedFeaturePoints, initialEstimates)
 grid.arrange(plot1, plot2, plot3, plot4, ncol = 2)
+```
+
+At the program level, the following visualizations are included:
+1. Feature Progress
+2. Program Predictability
+3. Program Increment Burndown 
+
+```{r, echo = FALSE, include = FALSE}
+#Functions to produce visuals aiding in feature progress, PI progress and predictability
+install.packages("ggplot2")
+install.packages("gridExtra")
+library(ggplot2)
+library(gridExtra)
+
+#Feature Progress Chart
+generateFeatureProgress <- function(featureName, completedPoints, totalPoints) {
+    df <- data.frame(featureName, completedPoints, totalPoints)
+    df$percentComplete <- completedPoints / totalPoints
+    df$remainingPoints <- totalPoints - completedPoints
+
+    ggplot(df, aes(x = featureName, y = totalPoints, color = featureName)) +
+      geom_bar(aes(y = totalPoints, fill = featureName), stat = "identity") +
+      geom_text(aes(label = totalPoints), col = "black", hjust = 1.25) +
+      geom_bar(aes(y = completedPoints), fill = "purple", stat = "identity") +
+      geom_text(aes(label = completedPoints), col = "green", hjust = 1.25, vjust = -1.15) +
+      coord_flip() +
+      ggtitle("Feature Progress Report") +
+      xlab("Feature Name") +
+      ylab("Effort (in Story Points)") +
+      theme(legend.position = "none")
+}
+
+#Program Predictability Measure
+generateProgramPredictability <- function(teamName, incrementName, actualObjectivesAchieved, targetObjectivesPlanned) {
+
+    df <- data.frame(teamName, incrementName, actualObjectivesAchieved, targetObjectivesPlanned)
+    df$percentObjectivesAchieved <- actualObjectivesAchieved / targetObjectivesPlanned
+
+    ggplot(df, aes(x = incrementName, y = percentObjectivesAchieved, group = teamName)) +
+      geom_point(aes(y = percentObjectivesAchieved, col = teamName)) +
+      geom_line(aes(col = teamName), linetype = 5) +
+      geom_line(aes(y = mean(percentObjectivesAchieved))) +
+      ggtitle("Program Predictability Measure") +
+      xlab("Program Increment") +
+      ylab("Objective Completion Rate (%)")
+}
+
+
+#PI Burn-Down Chart
+generatePiBurnDown <- function(incrementName, remainingStories, idealRemainingStories) {
+
+    df <- data.frame(incrementName, remainingStories, idealRemainingStories)
+
+    ggplot(df, aes(x = incrementName, y = remainingStories)) +
+      geom_point(col = "red") +
+      geom_point(aes(y = idealRemainingStories)) +
+      ggtitle("Program Increment Burn Down") +
+      xlab("Program Increment") +
+      ylab("User Story Count")
+}
+
+```
+
+## Feature Progress Visual
+The **Feature Progress Visual** depicts the initial estimate in story points, actual story points completed, and cumulative story points completed over time. Therefore, the **generateEpicBurnUp** function takes the following parameters: 1. **iterationName** - a vector of iteration names in chronological order, 2. **initialEstimate** - a vector of initialEstimates, 3. **actualStoryPoints** - the actual story points completed in an iteration, and 4. **cumulativeStoryPoints** - a running sum of the storyPoints iteration to iteration.
+
+The following depicts and example of the **Feature Progress Visual**:
+
+```{r}
+#Feature Progress Visual
+featureName <- c("Feature #1", "Feature #2", "Feature #3", "Feature #4", "Feature #5", "Feature #6")
+totalPoints <- c(35, 34, 50, 42, 61, 37)
+completedPoints <- c(30, 31, 44, 34, 30, 12)
+generateFeatureProgress(featureName, completedPoints, totalPoints)
+```
+
+## Program Predictability Measure
+The **Program Predictability Measure** depicts the Cost of Delay against the estiamted Duration (in Iterations) of a given Feature. Therefore, the **generateWsjf** function takes the following parameters: 1. **featureName** - vector of feature names, 2. **duration** - vector of durations, and 3. **cod** - vector of cost of delay.
+
+The following depicts an example of the **Program Predictability Measure**:
+
+```{r}
+#Program Predictability Measure
+teamName <- c("Team 2", "Team 3", "Team 4", "Team 5", "Team 6", "Team 2", "Team 3", "Team 4", "Team 5", "Team 6", "Team 2", "Team 3", "Team 4", "Team 5", "Team 6", "Team 2", "Team 3", "Team 4", "Team 5", "Team 6")
+incrementName <- c("PI 1", "PI 1", "PI 1", "PI 1", "PI 1", "PI 2", "PI 2", "PI 2", "PI 2", "PI 2", "PI 3", "PI 3", "PI 3", "PI 3", "PI 3", "PI 4", "PI 4", "PI 4", "PI 4", "PI 4")
+actualObjectivesAchieved <- c(70, 68, 79, 49, 55, 70, 57, 44, 53, 55, 80, 68, 70, 49, 54, 70, 68, 69, 49, 52)
+targetObjectivesAchieved <- c(80, 60, 74, 40, 50, 71, 39, 46, 40, 39, 60, 66, 72, 45, 53, 69, 60, 55, 47, 52)
+generateProgramPredictability(teamName, incrementName, actualObjectivesAchieved, targetObjectivesAchieved)
+```
+
+## Investment Opportunity Schedule
+The **Program Increment Burndown** provides an alternative visual to standard SAFe metrics that leverages a concept from investment planning, which compares Internal Rate of Return vs. Capital Costs. Therefore the **generateIos** function take the following parameters: 1. **projectName** - the epic or project name, 2. **projectReturnRate** - the anticipated return rate in decimal format, and 3. **projectCost** - estiamted cost in USD.
+
+The following depicts an example of the **Program Increment Burndown**:
+
+```{r}
+#Program Increment Burndown
+incrementName <- c("Iteration 1", "Iteration 2", "Iteration 3", "Iteration 4", "Iteration 5", "Iteration 6")
+remainingStories <- c(75, 60, 40, 32, 16, 4)
+idealRemainingStories <- c(75, 62.5, 50, 37.5, 25, 12.5)
+generatePiBurnDown(incrementName, remainingStories, idealRemainingStories)
+```
+
+*Note: All vectors must be an equal length. This makes datasources in a table format, which are easily converted to dataframes, an ideal source.*
+
+## Grid All Portfolio Charts
+To view all of these portfolio visuals in a gridview using gridExtra:
+
+```{r, echo = FALSE}
+#install.packages("gridExtra")
+plot5 <- generateFeatureProgress(featureName, completedPoints, totalPoints)
+plot6 <- generateProgramPredictability(teamName, incrementName, actualObjectivesAchieved, targetObjectivesAchieved)
+plot7 <- generatePiBurnDown(incrementName, remainingStories, idealRemainingStories)
+grid.arrange(plot5, plot6, plot7, ncol = 3)
 ```

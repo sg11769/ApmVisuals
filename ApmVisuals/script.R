@@ -71,3 +71,49 @@ generateEpicProgress <- function(epicNames, startDates, targetDates, totalFeatur
       ylab("Effort (in Story Points)") +
       theme(legend.position = "none")
 }
+
+#Feature Progress Visual
+generateFeatureProgress <- function(featureName, completedPoints, totalPoints) {
+    df <- data.frame(featureName, completedPoints, totalPoints)
+    df$percentComplete <- completedPoints / totalPoints
+    df$remainingPoints <- totalPoints - completedPoints
+
+    ggplot(df, aes(x = featureName, y = totalPoints, color = featureName)) +
+      geom_bar(aes(y = totalPoints, fill = featureName), stat = "identity") +
+      geom_text(aes(label = totalPoints), col = "black", hjust = 1.25) +
+      geom_bar(aes(y = completedPoints), fill = "purple", stat = "identity") +
+      geom_text(aes(label = completedPoints), col = "green", hjust = 1.25, vjust = -1.15) +
+      coord_flip() +
+      ggtitle("Feature Progress Report") +
+      xlab("Feature Name") +
+      ylab("Effort (in Story Points)") +
+      theme(legend.position = "none")
+}
+
+#Program Predictability Measure
+generateProgramPredictability <- function(teamName, incrementName, actualObjectivesAchieved, targetObjectivesPlanned) {
+
+    df <- data.frame(teamName, incrementName, actualObjectivesAchieved, targetObjectivesPlanned)
+    df$percentObjectivesAchieved <- actualObjectivesAchieved / targetObjectivesPlanned
+
+    ggplot(df, aes(x = incrementName, y = percentObjectivesAchieved, group = teamName)) +
+      geom_point(aes(y = percentObjectivesAchieved, col = teamName)) +
+      geom_line(aes(col = teamName), linetype = 5) +
+      geom_line(aes(y = mean(percentObjectivesAchieved))) +
+      ggtitle("Program Predictability Measure") +
+      xlab("Program Increment") +
+      ylab("Objective Completion Rate (%)")
+}
+
+#PI Burn-Down Chart
+generatePiBurnDown <- function(incrementName, remainingStories, idealRemainingStories) {
+
+    df <- data.frame(incrementName, remainingStories, idealRemainingStories)
+
+    ggplot(df, aes(x = incrementName, y = remainingStories)) +
+      geom_point(col = "red") +
+      geom_point(aes(y = idealRemainingStories)) +
+      ggtitle("Program Increment Burn Down") +
+      xlab("Program Increment") +
+      ylab("User Story Count")
+}
